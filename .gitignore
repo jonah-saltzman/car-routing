@@ -1,2 +1,6 @@
 .vscode
 .pylintrc
+*.txt
+/*.txt
+./*.txt
+./fast.txt

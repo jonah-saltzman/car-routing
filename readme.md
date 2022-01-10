@@ -28,3 +28,16 @@ The above optimizations produced dramatic improvements, in time required for the
 | Naive               | 0.03 seconds     | 426 ticks    |
 | Alg (not optimized) | 95.28 seconds    | 364 ticks    |
 | Alg (optimized)     | 0.12 seconds     | 359 ticks    |
+
+### Time Complexity
+The time complexity of the naive solution is O(2n), where n is the number of pending requests plus the number of riders in the car. Each request’s pickup location and each rider’s dropoff location is normalized into a list of `[x, y]` lists, each of which has its distance from the car’s current position calculated - this is the first half of the 2n. Then, in order to pick the shortest route, each route (consisting of the car’s location and the normalized destination) is iterated through again, comparing its length with the shortest length seen so far. Thus, the time complexity is O(2n).
+
+The time complexity of a general permutation algorithm is O(n * n!), where n is the number of elements to be permuted. Thus, if we keep n as the number of pending requests plus the number of riders in the car, in O(n * n!), n is actually (a + 2b), where a is the number of riders in the car, and b is the number of pending requests, since each pending request will be separated out into two different elements that will be permuted separately. So for the permutation algorithm, the time complexity is 
+
+    O((a + 2b) * (a + 2b)!)
+
+While if we keep the same a and b variables for the naive solution, it will have a time complexity of
+
+	O(2(a + b)) = O(2a + 2b)
+
+So, the time complexity of the permutation algorithm is much, much bigger than that of the naive solution. However, although the upper bound of the time complexity of the optimized and non-optimized permutation algorithm should be the same, in practice, the optimized version is much faster because some iterations are skipped (branches are pruned), but which ones will be skipped cannot be known in advance. In addition, which branches will be pruned is heavily dependent on the order in which the elements to be permuted are passed to the `permute` function. If a very short route is discovered early on in the recursion, many branches will be pruned, but if the same route is not discovered until closer to the end of the recursion, branches that would have been pruned will already have been processed fully, and less benefit will be gained from the optimization. So, a further optimization to my solution would be to write a pre-algorithm sorter that could efficiently sort destinations in such a way that the permute function would encounter a short route early in its recursion.
