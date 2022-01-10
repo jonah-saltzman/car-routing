@@ -149,9 +149,12 @@ def main(grid_y, grid_x, time_limit, req_list = None):
             time = next
 
 if __name__ == "__main__":
-    file = open(sys.argv[4])
-    data = json.load(file)
-    requests = []
-    for time in data:
-        requests.append(data[time] or None)
-    main(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), requests)
+    if len(sys.argv) != 5 or not sys.argv[1].isnumeric() or not sys.argv[2].isnumeric or not sys.argv[3].isnumeric() or type(sys.argv[4]) != str:
+        print('Usage:', sys.argv[0], ' <x length> <y length> <tick limit> <path to requests json>')
+    else:
+        file = open(sys.argv[4])
+        data = json.load(file)
+        requests = []
+        for time in data:
+            requests.append(data[time] or None)
+        main(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), requests)

@@ -18,7 +18,6 @@ class Car:
         return [self.x, self.y]
     def move(self):
         if self.change:
-            print('was a change, recalculating...')
             if self.riders or self.requests:
                 routes = get_routes([self.pos()], self.riders, self.requests)
                 shortest = shortest_route(self.pos(), routes, self.max_dist)
@@ -66,8 +65,8 @@ class Car:
                 remaining_riders.append(rider)
         self.riders = remaining_riders
         return {'pickups': pickups, 'dropoffs': dropoffs}
-    def done(self, more_requests):
-        return False if more_requests or self.requests or self.riders else True
+    def done(self):
+        return False if self.requests or self.riders else True
 
 def get_routes(start, riders, requests):
     destinations = []
@@ -132,11 +131,9 @@ def shortest_route(start, routes, max):
     scores = []
     for route in routes:
         route.insert(0, start)
-        dist = 0
-        for i in range(len(route) - 1):
-            dist = dist + calc_distance(route[i], route[i + 1])
+        dist = route_length(route)
         scores.append({'route': route, 'distance': dist})
-    shortest_distance = max + 1
+    shortest_distance = max
     best_route = None
     for route in scores:
         if route['distance'] < shortest_distance:
@@ -156,15 +153,13 @@ def tick(time, car, new_requests, more_requests):
     exchange = car.exchange()
     print('time: ', time)
     print('car: ', car.pos())
-    if car.pos() not in visited:
-        visited.append(car.pos())
     print('riders: ', car.riders)
     print('requests: ')
     for request in car.requests:
         print(request)
     print('dropoffs: ', exchange['dropoffs'])
     print('pickups: ', exchange['pickups'])
-    if car.done(more_requests):
+    if car.done() and not more_requests:
         return 'DONE'
     print('-----------')
     car.move()
@@ -188,13 +183,16 @@ def main(grid_y, grid_x, time_limit, req_list = None):
             return
         else:
             time = next
-
-visited = []
+    print('ran out of time...')
+    return
 
 if __name__ == "__main__":
-    file = open(sys.argv[4])
-    data = json.load(file)
-    requests = []
-    for time in data:
-        requests.append(data[time] or None)
-    main(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), requests)
+    if len(sys.argv) != 5 or not sys.argv[1].isnumeric() or not sys.argv[2].isnumeric or not sys.argv[3].isnumeric():
+        print('Usage:', sys.argv[0], ' <x length> <y length> <tick limit> <path to requests json>')
+    else:
+        file = open(sys.argv[4])
+        data = json.load(file)
+        requests = []
+        for time in data:
+            requests.append(data[time] or None)
+        main(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), requests)
