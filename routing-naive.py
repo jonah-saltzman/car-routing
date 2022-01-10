@@ -69,18 +69,6 @@ def get_routes(riders, requests):
         destinations.append(request['start'])
     return destinations
 
-def permute(stops):
-    if len(stops) == 1:
-        return [stops]
-    permutations = []
-    for i in range(len(stops)):
-        first = stops[i]
-        remaining = [*stops]
-        del remaining[i]
-        for permutation in permute(remaining):
-            permutations.append([first] + permutation)
-    return permutations
-
 def shortest_route(start, routes, max):
     scores = []
     for route in routes:

@@ -2,7 +2,7 @@ import sys
 import json
 import math
 
-worst = math.inf
+best = math.inf
 
 class Car:
     def __init__(self, board, x_start = 0, y_start = 0, riders = [], requests = []):
@@ -88,9 +88,9 @@ def get_routes(start, riders, requests):
             stop_count = stop_count + 1
         else:
             stop_count = stop_count + 2
-    # reset worst to positive infinity before getting route permutations
-    global worst
-    worst = math.inf
+    # reset best to positive infinity before getting route permutations
+    global best
+    best = math.inf
     # get all permutations of the current riders' destinations & start-end pairs
     permutations = permute(start, destinations, stop_count)
     routes = []
@@ -104,7 +104,7 @@ def get_routes(start, riders, requests):
 
 # recursive permutation algorithm implementing decision tree pruning
 def permute(start, stops, stop_count):
-    global worst
+    global best
     # base case
     if len(stops) == 1:
         # if the remaining stop is a start-end pair, convert it into two
@@ -116,12 +116,12 @@ def permute(start, stops, stop_count):
             result = stops
             route = start + [result[0]['dest']]
         # if the remaining stop constitutes the final stop of a permuted route, calculate
-        # the route's length. If the length is less than the worst length encountered so far,
-        # it becomes the new worst length
+        # the route's length. If the length is less than the best length encountered so far,
+        # it becomes the new best length
         if (len(route) == stop_count):
             length = route_length(route)
-            if length < worst:
-                worst = length
+            if length < best:
+                best = length
         return [result]
     permutations = []
     # for each stop in the route, remove it from the route, place it at the beginning,
@@ -129,15 +129,18 @@ def permute(start, stops, stop_count):
     for i in range(len(stops)):
         first = stops[i]
         remaining = stops[:i] + stops[i+1:]
-        # if the new 'start' is a start-end pair, convert the start & end to generic destinations,
-        # and place the end destination in the array to be permuted. This ensures that every start destination always comes before its corresponding stop.
+        # if the new 'first' is a start-end pair, convert the start & end to generic destinations,
+        # and place the end destination in the array to be permuted. This ensures that every
+        # start destination always comes before its corresponding stop.
         if 'start' in first.keys():
             remaining.append({'dest': first['end']})
             first = {'dest': first['start']}
         new_start = [*start]
         new_start.append(first['dest'])
-        # if the route comprised by the stops whose order has was determined earlier in this recursive branch is already longer than the worst full route encountered so far, prune the branch (no need for further recursion, we will definitely choose a different branch)
-        if route_length(new_start) >= worst:
+        # if the route comprised by the stops whose order has was determined earlier in this
+        # recursive branch is already longer than the best full route encountered so far, prune
+        # the branch (no need for further recursion, we will definitely choose a different branch)
+        if route_length(new_start) >= best:
             continue
         # otherwise, contunue permuting
         permuted = permute(new_start, remaining, stop_count)
@@ -201,7 +204,7 @@ def tick(time, car, new_requests, more_requests):
 def main(grid_y, grid_x, time_limit, req_list = None):
     # a grid is actually not necessary for my solution; it is only used by the car
     # Class to determine the center of the grid, which is the destination used if
-    # it does not start with any riders or requests.
+    # it does not have any riders or requests.
     grid = list([] for _ in range(grid_x))
     for x in range(grid_x):
         for y in range(grid_y):
@@ -209,7 +212,7 @@ def main(grid_y, grid_x, time_limit, req_list = None):
     time = 0
     car = Car(grid, 0, 0)
     for _ in range(time_limit):
-        # for each tick, if there are new requests for that tick, given them to the car
+        # for each tick, if there are new requests for that tick, give them to the car
         new_requests = req_list[time] if time in range(len(req_list)) else None
         # more_requests boolean used to determine if the simulation is over
         more_requests = False if time > len(req_list) - 1 else True
